@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0ABAB5">
+<meta name="robots" content="noindex">
+<title>Xmas あみだくじ</title>
+<style>
+  :root{
+    --tiffany:#0ABAB5;
+    --tiffany-d:#07918d;
+    --tiffany-m:#7fdcd9;
+    --tiffany-l:#c6f0ef;
+    --tiffany-xl:#ecfbfb;
+    --pink:#ffc4d3;
+    --pink-d:#ff7d9d;
+    --red-soft:#ff9fb2;
+    --green-soft:#a8e6c1;
+    --gold-soft:#ffe39a;
+    --text:#3b5f5e;
+    --white:#ffffff;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;min-height:100%}
+  body{
+    font-family:"Hiragino Maru Gothic ProN","Hiragino Sans","Arial Rounded MT Bold","Yu Gothic UI","Meiryo",sans-serif;
+    color:var(--text);
+    background:linear-gradient(180deg,#d4f5f3 0%,#effcfb 50%,#fff3f7 100%);
+    background-attachment:fixed;
+    min-height:100vh;min-height:100dvh;
+    overflow-x:hidden;
+    -webkit-user-select:none;user-select:none;
+  }
+
+  /* ---------- 雪 ---------- */
+  #snow{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+  .flake{position:absolute;top:-30px;color:#fff;text-shadow:0 0 3px rgba(10,186,181,.9),0 0 8px rgba(10,186,181,.5);animation:fall linear infinite;will-change:transform}
+  @keyframes fall{to{transform:translate3d(var(--dx),112vh,0) rotate(360deg)}}
+
+  main{
+    position:relative;z-index:1;
+    max-width:440px;margin:0 auto;
+    padding:calc(18px + env(safe-area-inset-top)) 16px calc(26px + env(safe-area-inset-bottom));
+    min-height:100vh;min-height:100dvh;
+    display:flex;flex-direction:column;
+  }
+  .header{text-align:center;font-weight:bold;color:var(--tiffany-d);letter-spacing:.08em;font-size:.95rem;margin-bottom:10px}
+  .header .tag{display:inline-block;background:rgba(255,255,255,.85);border-radius:999px;padding:6px 16px;box-shadow:0 4px 12px rgba(10,186,181,.15)}
+
+  .screen{display:none;flex:1;flex-direction:column;align-items:center;justify-content:center;width:100%}
+  .screen.active{display:flex;animation:fadeIn .55s ease}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+  .card{
+    width:100%;position:relative;text-align:center;
+    background:rgba(255,255,255,.9);
+    border:3px solid #fff;border-radius:30px;
+    padding:30px 20px 24px;
+    box-shadow:0 12px 32px rgba(10,186,181,.2);
+  }
+  /* 電飾ガーランド */
+  .lights{position:absolute;left:18px;right:18px;top:-9px;display:flex;justify-content:space-between;pointer-events:none}
+  .lights i{width:14px;height:14px;border-radius:50%;display:block;animation:twinkle 1.6s ease-in-out infinite;box-shadow:0 0 8px currentColor}
+  .lights i:nth-child(4n+1){background:var(--red-soft);color:var(--red-soft)}
+  .lights i:nth-child(4n+2){background:var(--tiffany-m);color:var(--tiffany-m);animation-delay:.4s}
+  .lights i:nth-child(4n+3){background:var(--gold-soft);color:var(--gold-soft);animation-delay:.8s}
+  .lights i:nth-child(4n){background:var(--green-soft);color:var(--green-soft);animation-delay:1.2s}
+  @keyframes twinkle{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.45;transform:scale(.8)}}
+
+  h1{font-size:1.4rem;margin:.2em 0 .35em;color:var(--tiffany-d)}
+  .sub{font-size:.92rem;line-height:1.7;margin:0 0 1.1em;opacity:.85}
+  .big-emoji{font-size:3rem;line-height:1.1;margin-bottom:6px}
+
+  input[type=text],input[type=password]{
+    -webkit-user-select:text;user-select:text;
+    width:100%;font-size:1.35rem;text-align:center;font-family:inherit;color:var(--text);
+    padding:14px 16px;border-radius:999px;
+    border:3px solid var(--tiffany-l);background:var(--tiffany-xl);outline:none;
+    transition:border-color .2s, box-shadow .2s;
+  }
+  input:focus{border-color:var(--tiffany);box-shadow:0 0 0 5px rgba(10,186,181,.15)}
+  input:disabled{opacity:.6}
+  .btn{
+    display:block;width:100%;margin-top:18px;
+    padding:15px 20px;font-size:1.1rem;font-weight:bold;font-family:inherit;color:#fff;
+    background:linear-gradient(135deg,#43d3ce,var(--tiffany));
+    border:none;border-radius:999px;cursor:pointer;
+    box-shadow:0 6px 0 var(--tiffany-d),0 12px 20px rgba(10,186,181,.28);
+    transition:transform .08s, box-shadow .08s;
+  }
+  .btn:active{transform:translateY(4px);box-shadow:0 2px 0 var(--tiffany-d),0 4px 10px rgba(10,186,181,.25)}
+  .btn:disabled{opacity:.5;pointer-events:none}
+  .btn.pink{background:linear-gradient(135deg,#ffaec3,var(--pink-d));box-shadow:0 6px 0 #e9668a,0 12px 20px rgba(255,125,157,.3)}
+  .btn.pink:active{box-shadow:0 2px 0 #e9668a}
+  .msg{min-height:1.7em;margin-top:12px;font-size:.95rem;font-weight:bold;color:var(--pink-d)}
+  .shake{animation:shake .45s}
+  @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-9px)}40%{transform:translateX(9px)}60%{transform:translateX(-6px)}80%{transform:translateX(6px)}}
+  .hidden{display:none !important}
+
+  /* ---------- あみだくじ ---------- */
+  .amida-card{padding:24px 10px 18px}
+  #amida{width:100%;height:auto;display:block;touch-action:manipulation}
+  #amida .vline{stroke:var(--tiffany-m);stroke-width:5;stroke-linecap:round}
+  #amida .rung{stroke:var(--tiffany-m);stroke-width:5;stroke-linecap:round;opacity:0;transition:opacity .6s}
+  #amida .rung.show{opacity:1}
+  #amida .route{fill:none;stroke:var(--pink-d);stroke-width:7;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 4px rgba(255,125,157,.7))}
+  #amida .start{cursor:pointer;outline:none}
+  #amida .start circle{fill:#fff;stroke:var(--tiffany);stroke-width:3;transition:fill .2s}
+  #amida .start.chosen circle{fill:var(--pink);stroke:var(--pink-d)}
+  #amida .start.dim{opacity:.35}
+  #amida.locked .start{cursor:default}
+  #amida .start .bob{animation:bob 1.8s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+  #amida .start:nth-of-type(2) .bob{animation-delay:.2s}
+  #amida .start:nth-of-type(3) .bob{animation-delay:.4s}
+  #amida .start:nth-of-type(4) .bob{animation-delay:.6s}
+  #amida .start:nth-of-type(5) .bob{animation-delay:.8s}
+  #amida.locked .start .bob{animation:none}
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+  #amida .goal{transform-box:fill-box;transform-origin:center}
+  #amida .goal.arrive{animation:arrive 1s ease-in-out infinite}
+  @keyframes arrive{0%,100%{transform:scale(1)}50%{transform:scale(1.35)}}
+  #amida .cover{transition:opacity .9s ease}
+  #amida .cover.gone{opacity:0}
+  #amida .cloud{fill:#fff}
+  .hint{margin:10px 0 0;font-size:.95rem;font-weight:bold;color:var(--tiffany-d)}
+  .arrived{margin-top:6px;font-size:1.1rem;font-weight:bold;color:var(--pink-d);animation:fadeIn .5s ease}
+
+  /* ---------- なぞなぞ ---------- */
+  .question{
+    background:var(--tiffany-xl);border:2px dashed var(--tiffany-m);border-radius:22px;
+    padding:16px 14px;margin:6px 0 18px;line-height:1.85;font-size:1.02rem;font-weight:bold;text-align:left;
+  }
+  .lives{font-size:1.25rem;letter-spacing:.15em;margin-bottom:4px}
+  .lives-text{font-size:.9rem;font-weight:bold;color:var(--tiffany-d);margin-bottom:14px}
+
+  /* ---------- 正解 ---------- */
+  .pop{
+    font-size:3.4rem;font-weight:900;color:var(--pink-d);
+    text-shadow:3px 3px 0 #fff,6px 6px 0 var(--pink);
+    animation:pop .9s cubic-bezier(.2,1.6,.4,1) both;
+  }
+  @keyframes pop{0%{transform:scale(0) rotate(-12deg);opacity:0}60%{transform:scale(1.25) rotate(4deg);opacity:1}100%{transform:scale(1) rotate(0)}}
+  .prize{margin-top:18px;animation:prizeIn .8s cubic-bezier(.2,1.4,.4,1) both}
+  @keyframes prizeIn{from{opacity:0;transform:translateY(20px) scale(.85)}to{opacity:1;transform:none}}
+  .prize-box{
+    background:linear-gradient(135deg,var(--tiffany-l),#fff 60%,var(--pink));
+    border:3px solid #fff;border-radius:26px;padding:20px 14px;
+    box-shadow:0 8px 20px rgba(10,186,181,.2), inset 0 0 0 2px var(--tiffany-m);
+  }
+  .prize-label{font-size:.85rem;font-weight:bold;color:var(--tiffany-d);letter-spacing:.2em}
+  .prize-title{font-size:2.3rem;font-weight:900;color:var(--tiffany-d);margin:4px 0;text-shadow:2px 2px 0 #fff}
+  .love{font-size:1.25rem;font-weight:bold;color:var(--pink-d);margin:18px 0 4px;line-height:1.6}
+
+  /* ---------- ゴールの中身（正解後のみ開示） ---------- */
+  .reveal{margin-top:16px;text-align:left}
+  .reveal-title{text-align:center;font-weight:bold;color:var(--tiffany-d);margin-bottom:8px}
+  .goal-row{display:flex;align-items:center;gap:10px;margin:8px 4px;perspective:700px;scroll-margin:90px}
+  .goal-row .gh{font-size:1.7rem;width:2.3rem;text-align:center;flex:none}
+  .goal-row .face{flex:1;min-height:58px;border-radius:18px;padding:9px 14px;display:flex;flex-direction:column;justify-content:center}
+  .goal-row .back{
+    background:repeating-linear-gradient(45deg,var(--tiffany-l) 0 10px,var(--tiffany-xl) 10px 20px);
+    border:2px solid #fff;color:var(--tiffany-d);font-weight:bold;text-align:center;
+  }
+  .goal-row .front{display:none;background:#fff;border:2px solid var(--tiffany-l);box-shadow:0 4px 10px rgba(10,186,181,.12)}
+  .goal-row.open .back{display:none}
+  .goal-row.open .front{display:flex}
+  .goal-row.flip .front{animation:flipIn .65s cubic-bezier(.2,1.3,.4,1) both}
+  @keyframes flipIn{from{transform:rotateY(90deg);opacity:.2}to{transform:none;opacity:1}}
+  .goal-row.mine .front{background:linear-gradient(135deg,#fff 40%,var(--pink));border-color:var(--pink)}
+  .goal-row .rank{font-weight:900;font-size:1.05rem}
+  .goal-row .rank.good{color:var(--pink-d)}
+  .goal-row .rank.ok{color:var(--tiffany-d)}
+  .goal-row .rank.bad{color:#9a86c0}
+  .goal-row .words{font-size:.9rem;margin-top:2px;line-height:1.5}
+  .goal-row .mine-tag{display:inline-block;margin-left:6px;font-size:.7rem;font-weight:bold;color:#fff;background:var(--pink-d);border-radius:999px;padding:2px 8px;vertical-align:middle}
+  #amida .goal.peek{animation:peek .8s ease}
+  @keyframes peek{0%,100%{transform:scale(1)}50%{transform:scale(1.5)}}
+
+  /* ---------- お楽しみ ---------- */
+  .surprise{font-size:2rem;font-weight:900;color:var(--tiffany-d);margin:10px 0 6px;text-shadow:2px 2px 0 #fff,4px 4px 0 var(--tiffany-l)}
+
+  /* ハートが飛び散る演出 */
+  #fx{position:fixed;inset:0;pointer-events:none;z-index:5;overflow:hidden}
+  .burst{position:absolute;left:50%;top:40%;font-size:24px;animation:burst 1.6s ease-out forwards}
+  @keyframes burst{0%{transform:translate(-50%,-50%) scale(.3);opacity:1}100%{transform:translate(calc(-50% + var(--x)),calc(-50% + var(--y))) scale(1.1) rotate(var(--r));opacity:0}}
+
+  .toast{
+    position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%);
+    background:var(--tiffany);color:#fff;font-weight:bold;font-size:.9rem;
+    padding:10px 18px;border-radius:999px;z-index:10;box-shadow:0 6px 16px rgba(10,186,181,.35);
+    animation:fadeIn .4s ease;
+  }
+</style>
+</head>
+<body>
+<div id="snow" aria-hidden="true"></div>
+<div id="fx" aria-hidden="true"></div>
+
+<main>
+  <div class="header"><span class="tag">🎄 Merry Christmas 🎄</span></div>
+
+  <!-- 1. パスワード -->
+  <section id="s-pass" class="screen active">
+    <div class="card" id="pass-card">
+      <div class="lights"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      <div class="big-emoji">🎁💗</div>
+      <h1>ひみつのプレゼント</h1>
+      <p class="sub">パスワードを入れてね</p>
+      <form id="pass-form" autocomplete="off">
+        <input id="pass-input" type="password" inputmode="numeric" maxlength="8" placeholder="••••" aria-label="パスワード">
+        <button class="btn" type="submit">ひらく 🔑</button>
+      </form>
+      <div class="msg" id="pass-msg"></div>
+    </div>
+  </section>
+
+  <!-- 2. あみだくじ -->
+  <section id="s-amida" class="screen">
+    <div class="card amida-card">
+      <div class="lights"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      <h1>🎅 あみだくじ 🎄</h1>
+      <svg id="amida" viewBox="0 0 340 470" role="img" aria-label="あみだくじ"></svg>
+      <p class="hint" id="amida-hint">🎁 をひとつ えらんでね</p>
+      <div id="amida-done" class="hidden">
+        <div class="arrived">❤️ に とうちゃく！</div>
+        <button class="btn pink" id="to-riddle" type="button">なぞなぞに挑戦する 💌</button>
+      </div>
+      <div id="reveal" class="reveal hidden">
+        <div class="reveal-title">🎁 ゴールの中身 🎁</div>
+        <div id="goal-list"></div>
+        <div class="msg" id="reveal-msg" style="text-align:center;color:var(--tiffany-d)"></div>
+        <button class="btn pink hidden" id="back-win" type="button">特当たり①にもどる 🎀</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. なぞなぞ -->
+  <section id="s-riddle" class="screen">
+    <div class="card" id="riddle-card">
+      <div class="lights"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      <div class="big-emoji">❤️</div>
+      <h1>なぞなぞ</h1>
+      <div class="question">2乗するとマイナスになる、目には見えないのに確かに存在する数。その名前を読んでみて</div>
+      <div class="lives" id="lives"></div>
+      <div class="lives-text" id="lives-text"></div>
+      <form id="riddle-form" autocomplete="off">
+        <input id="riddle-input" type="text" placeholder="こたえ" aria-label="こたえ" autocapitalize="off" autocorrect="off" spellcheck="false">
+        <button class="btn" type="submit" id="riddle-btn">こたえる 💡</button>
+      </form>
+      <div class="msg" id="riddle-msg"></div>
+    </div>
+  </section>
+
+  <!-- 4. 正解 -->
+  <section id="s-win" class="screen">
+    <div class="card">
+      <div class="lights"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      <div class="pop" id="win-pop">正解！</div>
+      <div class="prize hidden" id="prize">
+        <div class="prize-box">
+          <div class="prize-label">🎀 PRESENT 🎀</div>
+          <div class="prize-title">特当たり①</div>
+          <div>🎄✨🎁✨🎄</div>
+        </div>
+        <p class="love">当ててくれると信じてたよ❣️</p>
+        <button class="btn hidden" id="show-goals" type="button">他のゴールも見る 👀</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. 当日のお楽しみ -->
+  <section id="s-lose" class="screen">
+    <div class="card">
+      <div class="lights"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      <div class="big-emoji">🎁</div>
+      <div class="surprise">当日のお楽しみ</div>
+      <div style="font-size:1.4rem;margin-top:8px">🎄 💗 ⛄ 💗 🎄</div>
+    </div>
+  </section>
+</main>
+
+<script>
+(function(){
+  'use strict';
+
+  /* ================= 設定 ================= */
+  // パスワードは平文で持たず SHA-256 ハッシュで照合
+  var PASS_HASH = '3bd62f7f9ccb2821f5330bd3a68629ed8b8a1a19370adf7d74636e76a698d430';
+  var STORAGE_KEY = 'xmasAmidakuji_v1';
+  var MAX_TRIES = 5;
+  var N = 5;                      // 縦線の本数
+  var LEVELS = 10;                // 横線を置ける段数
+  var GOALS = ['💛','🩵','❤️','💚','💜'];
+  var HEART = 2;                  // ❤️ の位置（固定）
+  var ANSWERS = ['i','あい','アイ','愛'];
+  // ゴールの中身（正解したときだけ開示する）
+  var PRIZES = {
+    '❤️': {rank:'特当たり①',   words:'素晴らしい❣️',              tone:'good'},
+    '🩵': {rank:'特当たり②',   words:'素晴らしい❣️',              tone:'good'},
+    '💛': {rank:'当たり',       words:'さすが‼️',                  tone:'ok'},
+    '💚': {rank:'ちょいハズレ', words:'惜しい〜',                  tone:'ok'},
+    '💜': {rank:'大ハズレ',     words:'これは引いてないよね❓❓',  tone:'bad'}
+  };
+  var REVEAL_ORDER = ['🩵','💛','💚','💜']; // めくる順番
+  var revealToken = 0;
+
+  // SVG 座標
+  var X = function(i){ return 40 + i * 65; };
+  var TOP = 72, BOTTOM = 408;
+  var LY = function(k){ return TOP + 26 + k * ((BOTTOM - TOP - 52) / (LEVELS - 1)); };
+
+  /* ================= localStorage（失敗しても止まらない） ================= */
+  var memoryState = null; // localStorage が使えない時の代わり
+  function loadState(){
+    try{
+      var raw = window.localStorage.getItem(STORAGE_KEY);
+      if(!raw) return memoryState;
+      var s = JSON.parse(raw);
+      return isValidState(s) ? s : memoryState;
+    }catch(e){ return memoryState; }
+  }
+  function saveState(s){
+    memoryState = s;
+    try{ window.localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); }catch(e){}
+  }
+  function clearState(){
+    memoryState = null;
+    try{ window.localStorage.removeItem(STORAGE_KEY); }catch(e){}
+  }
+  function isValidState(s){
+    if(!s || typeof s !== 'object') return false;
+    if(typeof s.start !== 'number' || s.start < 0 || s.start >= N) return false;
+    if(!Array.isArray(s.rungs)) return false;
+    if(typeof s.remaining !== 'number') return false;
+    return true;
+  }
+
+  /* ================= ?reset ================= */
+  (function(){
+    var q = '';
+    try{ q = window.location.search || ''; }catch(e){}
+    if(/[?&]reset(=|&|$)/.test(q)){
+      clearState();
+      try{ history.replaceState(null, '', location.pathname + location.hash); }catch(e){}
+      toast('保存内容をリセットしました');
+    }
+  })();
+
+  /* ================= SHA-256 ================= */
+  function toHex(buf){
+    var b = new Uint8Array(buf), s = '';
+    for(var i=0;i<b.length;i++){ s += ('0' + b[i].toString(16)).slice(-2); }
+    return s;
+  }
+  function utf8(str){
+    if(window.TextEncoder) return Array.prototype.slice.call(new TextEncoder().encode(str));
+    var s = unescape(encodeURIComponent(str)), a = [];
+    for(var i=0;i<s.length;i++) a.push(s.charCodeAt(i));
+    return a;
+  }
+  // crypto.subtle が使えない環境（http のローカル確認など）用の予備実装
+  function sha256Fallback(str){
+    function rr(v,a){ return (v>>>a) | (v<<(32-a)); }
+    var H = [], K = [], n = 2, c = 0;
+    function isPrime(x){ for(var f=2; f*f<=x; f++){ if(x%f===0) return false; } return true; }
+    while(c < 64){
+      if(isPrime(n)){
+        if(c < 8) H[c] = (Math.pow(n, 1/2) * 4294967296) | 0;
+        K[c] = (Math.pow(n, 1/3) * 4294967296) | 0;
+        c++;
+      }
+      n++;
+    }
+    var b = utf8(str), bitLen = b.length * 8;
+    b.push(0x80);
+    while(b.length % 64 !== 56) b.push(0);
+    for(var i=7;i>=0;i--) b.push(i >= 4 ? 0 : (bitLen >>> (i*8)) & 255);
+    var w = new Array(64);
+    for(var j=0;j<b.length;j+=64){
+      for(i=0;i<16;i++) w[i] = (b[j+i*4]<<24) | (b[j+i*4+1]<<16) | (b[j+i*4+2]<<8) | b[j+i*4+3];
+      for(i=16;i<64;i++){
+        var s0 = rr(w[i-15],7) ^ rr(w[i-15],18) ^ (w[i-15]>>>3);
+        var s1 = rr(w[i-2],17) ^ rr(w[i-2],19) ^ (w[i-2]>>>10);
+        w[i] = (w[i-16] + s0 + w[i-7] + s1) | 0;
+      }
+      var a=H[0],bb=H[1],cc=H[2],d=H[3],e=H[4],f=H[5],g=H[6],h=H[7];
+      for(i=0;i<64;i++){
+        var S1 = rr(e,6) ^ rr(e,11) ^ rr(e,25);
+        var ch = (e & f) ^ (~e & g);
+        var t1 = (h + S1 + ch + K[i] + w[i]) | 0;
+        var S0 = rr(a,2) ^ rr(a,13) ^ rr(a,22);
+        var maj = (a & bb) ^ (a & cc) ^ (bb & cc);
+        var t2 = (S0 + maj) | 0;
+        h=g; g=f; f=e; e=(d+t1)|0; d=cc; cc=bb; bb=a; a=(t1+t2)|0;
+      }
+      H[0]=(H[0]+a)|0; H[1]=(H[1]+bb)|0; H[2]=(H[2]+cc)|0; H[3]=(H[3]+d)|0;
+      H[4]=(H[4]+e)|0; H[5]=(H[5]+f)|0; H[6]=(H[6]+g)|0; H[7]=(H[7]+h)|0;
+    }
+    return H.map(function(v){ return ('00000000' + (v>>>0).toString(16)).slice(-8); }).join('');
+  }
+  function sha256(str){
+    try{
+      if(window.crypto && window.crypto.subtle && window.TextEncoder){
+        return window.crypto.subtle.digest('SHA-256', new TextEncoder().encode(str))
+          .then(toHex)
+          .catch(function(){ return sha256Fallback(str); });
+      }
+    }catch(e){}
+    return Promise.resolve(sha256Fallback(str));
+  }
+
+  /* ================= 画面切り替え ================= */
+  function show(id){
+    var list = document.querySelectorAll('.screen');
+    for(var i=0;i<list.length;i++) list[i].classList.remove('active');
+    document.getElementById(id).classList.add('active');
+    try{ window.scrollTo(0,0); }catch(e){}
+  }
+  function shake(el){
+    el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake');
+  }
+  function toast(text){
+    var t = document.createElement('div');
+    t.className = 'toast'; t.textContent = text;
+    document.body.appendChild(t);
+    setTimeout(function(){ if(t.parentNode) t.parentNode.removeChild(t); }, 2600);
+  }
+
+  /* ================= 1. パスワード ================= */
+  var passForm = document.getElementById('pass-form');
+  var passInput = document.getElementById('pass-input');
+  var passMsg = document.getElementById('pass-msg');
+  var checking = false;
+  passForm.addEventListener('submit', function(ev){
+    ev.preventDefault();
+    if(checking) return;
+    var v = (passInput.value || '').normalize ? passInput.value.normalize('NFKC').trim() : passInput.value.trim();
+    checking = true;
+    sha256(v).then(function(hex){
+      checking = false;
+      if(hex === PASS_HASH){
+        passMsg.textContent = '';
+        passInput.value = '';
+        passInput.blur();
+        route();
+      }else{
+        passMsg.textContent = 'パスワードがちがうみたい…🥺';
+        passInput.value = '';
+        shake(document.getElementById('pass-card'));
+      }
+    });
+  });
+
+  // パスワード後、保存内容に応じて画面を出し分け
+  function route(){
+    var s = loadState();
+    if(!s){ initAmida(); show('s-amida'); return; }
+    if(s.result === 'correct'){ if(s.revealed){ showGoals(); } else { showWin(); } return; }
+    if(s.result === 'failed' || s.remaining <= 0){ showLose(); return; }
+    showRiddle(); // あみだ済み → なぞなぞの途中から（引き直し不可）
+  }
+
+  /* ================= 2. あみだくじ ================= */
+  var svg = document.getElementById('amida');
+  var SVGNS = 'http://www.w3.org/2000/svg';
+  var amidaBusy = false;
+  var gRungs, gRoute, gCover, startEls = [], goalEls = [];
+
+  function el(name, attrs, parent){
+    var e = document.createElementNS(SVGNS, name);
+    for(var k in attrs){ if(Object.prototype.hasOwnProperty.call(attrs,k)) e.setAttribute(k, attrs[k]); }
+    if(parent) parent.appendChild(e);
+    return e;
+  }
+
+  function initAmida(){
+    while(svg.firstChild) svg.removeChild(svg.firstChild);
+    svg.classList.remove('locked');
+    startEls = []; goalEls = []; amidaBusy = false;
+    document.getElementById('amida-hint').classList.remove('hidden');
+    document.getElementById('amida-done').classList.add('hidden');
+    document.getElementById('reveal').classList.add('hidden');
+    revealToken++; // 進行中のめくり演出を止める
+
+    // 縦線
+    for(var i=0;i<N;i++){
+      el('line',{x1:X(i),y1:TOP,x2:X(i),y2:BOTTOM,'class':'vline'},svg);
+    }
+    gRungs = el('g',{},svg);
+    gRoute = el('g',{},svg);
+
+    // カバー（雲）
+    gCover = el('g',{'class':'cover'},svg);
+    el('rect',{x:12,y:TOP+10,width:316,height:BOTTOM-TOP-20,rx:28,fill:'#d9f5f4',stroke:'#fff','stroke-width':4},gCover);
+    var clouds = [[60,150,34],[105,128,28],[150,150,32],[200,132,30],[250,150,34],[290,135,26],
+                  [70,250,32],[125,232,30],[175,256,36],[230,236,30],[280,256,32],
+                  [55,350,30],[110,336,32],[165,356,30],[220,340,34],[278,352,30]];
+    clouds.forEach(function(c){ el('circle',{cx:c[0],cy:c[1],r:c[2],'class':'cloud',opacity:.9},gCover); });
+    var t1 = el('text',{x:170,y:200,'text-anchor':'middle','font-size':'22','font-weight':'bold',fill:'#07918d'},gCover);
+    t1.textContent = '☁️ ひみつ ☁️';
+    var t2 = el('text',{x:170,y:300,'text-anchor':'middle','font-size':'18'},gCover);
+    t2.textContent = '❄️ 💗 ❄️ 💗 ❄️';
+
+    // スタート
+    for(i=0;i<N;i++){
+      (function(idx){
+        var g = el('g',{'class':'start',role:'button','aria-label':'スタート'+(idx+1),tabindex:'0'},svg);
+        var b = el('g',{'class':'bob'},g);
+        el('circle',{cx:X(idx),cy:36,r:24},b);
+        var t = el('text',{x:X(idx),y:45,'text-anchor':'middle','font-size':'24'},b);
+        t.textContent = '🎁';
+        g.addEventListener('click', function(){ choose(idx); });
+        g.addEventListener('keydown', function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); choose(idx); } });
+        startEls.push(g);
+      })(i);
+    }
+    // ゴール（中身は書かない）
+    for(i=0;i<N;i++){
+      var gt = el('text',{x:X(i),y:BOTTOM+44,'text-anchor':'middle','font-size':'30','class':'goal'},svg);
+      gt.textContent = GOALS[i];
+      goalEls.push(gt);
+    }
+  }
+
+  function hasRung(rungs, k, i){
+    for(var r=0;r<rungs.length;r++){ if(rungs[r][0]===k && rungs[r][1]===i) return true; }
+    return false;
+  }
+  function trace(start, rungs){
+    var c = start, pts = [[X(c),TOP]];
+    for(var k=0;k<LEVELS;k++){
+      var y = LY(k);
+      if(c < N-1 && hasRung(rungs,k,c)){ pts.push([X(c),y]); c++; pts.push([X(c),y]); }
+      else if(c > 0 && hasRung(rungs,k,c-1)){ pts.push([X(c),y]); c--; pts.push([X(c),y]); }
+    }
+    pts.push([X(c),BOTTOM]);
+    return {end:c, pts:pts};
+  }
+  function randomRungs(){
+    var r = [];
+    for(var k=0;k<LEVELS;k++){
+      var prev = false;
+      for(var i=0;i<N-1;i++){
+        if(!prev && Math.random() < 0.45){ r.push([k,i]); prev = true; } else { prev = false; }
+      }
+    }
+    return r;
+  }
+  function looksGood(r){
+    if(r.length < 9) return false;
+    for(var i=0;i<N-1;i++){ // 全ての隣り合う縦線の間に最低1本
+      var ok = false;
+      for(var j=0;j<r.length;j++){ if(r[j][1]===i){ ok = true; break; } }
+      if(!ok) return false;
+    }
+    return true;
+  }
+  // 選んだスタートから必ず❤️に着くまで作り直す
+  function generateRungs(start){
+    for(var t=0;t<20000;t++){
+      var r = randomRungs();
+      if(looksGood(r) && trace(start,r).end === HEART) return r;
+    }
+    for(t=0;t<20000;t++){
+      r = randomRungs();
+      if(trace(start,r).end === HEART) return r;
+    }
+    // 念のための保険（ここに来ることはまずない）
+    r = []; var c = start, k = 0;
+    while(c !== HEART && k < LEVELS){ if(c < HEART){ r.push([k,c]); c++; } else { r.push([k,c-1]); c--; } k++; }
+    return r;
+  }
+
+  function choose(idx){
+    if(amidaBusy) return;
+    if(loadState()) { route(); return; } // 引き直し防止
+    amidaBusy = true;
+    svg.classList.add('locked');
+
+    var rungs = generateRungs(idx);
+    // 先に保存（途中で閉じても引き直せない）
+    saveState({start:idx, rungs:rungs, remaining:MAX_TRIES, result:null, stage:'amida', at:Date.now()});
+
+    startEls.forEach(function(g,i){ g.classList.add(i===idx ? 'chosen' : 'dim'); });
+    document.getElementById('amida-hint').classList.add('hidden');
+
+    rungs.forEach(function(rg){
+      el('line',{x1:X(rg[1]),y1:LY(rg[0]),x2:X(rg[1]+1),y2:LY(rg[0]),'class':'rung'},gRungs);
+    });
+    requestAnimationFrame(function(){
+      var ls = gRungs.querySelectorAll('.rung');
+      for(var i=0;i<ls.length;i++) ls[i].classList.add('show');
+      gCover.classList.add('gone');
+    });
+
+    setTimeout(function(){ animateRoute(idx, rungs); }, 1100);
+  }
+
+  function animateRoute(idx, rungs){
+    var tr = trace(idx, rungs);
+    var d = tr.pts.map(function(p,i){ return (i?'L':'M') + p[0] + ' ' + p[1]; }).join(' ');
+    var path = el('path',{d:d,'class':'route'},gRoute);
+    var star = el('text',{'text-anchor':'middle','font-size':'22'},gRoute);
+    star.textContent = '⭐';
+    var len = 0;
+    try{ len = path.getTotalLength(); }catch(e){}
+    if(!len){ finishRoute(); return; }
+    path.style.strokeDasharray = len;
+    path.style.strokeDashoffset = len;
+    var dur = Math.max(3000, len * 6.5), t0 = null;
+    function step(ts){
+      if(t0 === null) t0 = ts;
+      var p = Math.min(1, (ts - t0) / dur);
+      var e = p < .5 ? 2*p*p : 1 - Math.pow(-2*p + 2, 2) / 2;
+      var L = len * e;
+      path.style.strokeDashoffset = len - L;
+      try{ var pt = path.getPointAtLength(L); star.setAttribute('x', pt.x); star.setAttribute('y', pt.y + 8); }catch(err){}
+      if(p < 1) requestAnimationFrame(step); else finishRoute();
+    }
+    requestAnimationFrame(step);
+
+    function finishRoute(){
+      if(star.parentNode) star.parentNode.removeChild(star);
+      goalEls[tr.end].classList.add('arrive');
+      var s = loadState();
+      if(s && s.stage === 'amida'){ s.stage = 'riddle'; saveState(s); }
+      burstHearts(14);
+      document.getElementById('amida-done').classList.remove('hidden');
+    }
+  }
+  document.getElementById('to-riddle').addEventListener('click', function(){ showRiddle(); });
+
+  /* ================= 3. なぞなぞ ================= */
+  var riddleForm = document.getElementById('riddle-form');
+  var riddleInput = document.getElementById('riddle-input');
+  var riddleMsg = document.getElementById('riddle-msg');
+  var riddleBtn = document.getElementById('riddle-btn');
+
+  function normalize(str){
+    str = String(str || '');
+    try{ str = str.normalize('NFKC'); }catch(e){}
+    return str.replace(/^[\s　]+|[\s　]+$/g,'').toLowerCase();
+  }
+  function renderLives(remaining){
+    var h = '';
+    for(var i=0;i<MAX_TRIES;i++) h += (i < remaining ? '💗' : '🤍');
+    document.getElementById('lives').textContent = h;
+    document.getElementById('lives-text').textContent = 'のこり ' + remaining + ' 回';
+  }
+  function showRiddle(){
+    var s = loadState();
+    if(!s){ initAmida(); show('s-amida'); return; }
+    if(s.stage !== 'riddle'){ s.stage = 'riddle'; saveState(s); }
+    renderLives(s.remaining);
+    riddleMsg.textContent = '';
+    riddleInput.value = '';
+    riddleInput.disabled = false; riddleBtn.disabled = false;
+    show('s-riddle');
+  }
+  riddleForm.addEventListener('submit', function(ev){
+    ev.preventDefault();
+    var s = loadState();
+    if(!s || s.result) { route(); return; }
+    var ans = normalize(riddleInput.value);
+    if(!ans){ riddleMsg.textContent = 'こたえを入力してね ✏️'; return; }
+
+    if(ANSWERS.indexOf(ans) !== -1){
+      s.result = 'correct'; s.stage = 'done';
+      saveState(s);
+      riddleInput.disabled = true; riddleBtn.disabled = true;
+      riddleInput.blur();
+      showWin();
+      return;
+    }
+    s.remaining = Math.max(0, s.remaining - 1);
+    if(s.remaining <= 0){
+      s.result = 'failed'; s.stage = 'done';
+      saveState(s);
+      renderLives(0);
+      riddleInput.disabled = true; riddleBtn.disabled = true;
+      riddleInput.blur();
+      riddleMsg.textContent = 'ざんねん…！';
+      shake(document.getElementById('riddle-card'));
+      setTimeout(showLose, 1300);
+      return;
+    }
+    saveState(s);
+    renderLives(s.remaining);
+    riddleMsg.textContent = 'ざんねん…！ あと ' + s.remaining + ' 回 チャレンジできるよ';
+    riddleInput.value = '';
+    shake(document.getElementById('riddle-card'));
+  });
+
+  /* ================= 4. 正解 ================= */
+  function showWin(){
+    var pop = document.getElementById('win-pop');
+    var prize = document.getElementById('prize');
+    var goalsBtn = document.getElementById('show-goals');
+    var st = loadState();
+    goalsBtn.textContent = (st && st.revealed) ? 'ゴールの中身をもう一度見る 👀' : '他のゴールも見る 👀';
+    goalsBtn.classList.add('hidden');
+    prize.classList.add('hidden');
+    pop.style.animation = 'none'; void pop.offsetWidth; pop.style.animation = '';
+    show('s-win');
+    burstHearts(28);
+    setTimeout(function(){
+      prize.classList.remove('hidden');
+      burstHearts(20);
+      // 演出が終わってから「他のゴールも見る」を出す
+      setTimeout(function(){ goalsBtn.classList.remove('hidden'); }, 1400);
+    }, 1500);
+  }
+  document.getElementById('show-goals').addEventListener('click', function(){ showGoals(); });
+  document.getElementById('back-win').addEventListener('click', function(){ showWin(); });
+
+  /* ================= 4-2. 他のゴールの開示（正解後のみ） ================= */
+  // 保存済みの横線とルートを、カバーなし・アニメなしで描く
+  function renderStaticAmida(s){
+    initAmida();
+    amidaBusy = true; // 引き直し不可
+    svg.classList.add('locked');
+    document.getElementById('amida-hint').classList.add('hidden');
+    startEls.forEach(function(g,i){ g.classList.add(i===s.start ? 'chosen' : 'dim'); });
+    s.rungs.forEach(function(rg){
+      el('line',{x1:X(rg[1]),y1:LY(rg[0]),x2:X(rg[1]+1),y2:LY(rg[0]),'class':'rung show'},gRungs);
+    });
+    if(gCover && gCover.parentNode) gCover.parentNode.removeChild(gCover);
+    var tr = trace(s.start, s.rungs);
+    var d = tr.pts.map(function(p,i){ return (i?'L':'M') + p[0] + ' ' + p[1]; }).join(' ');
+    el('path',{d:d,'class':'route'},gRoute);
+    goalEls[HEART].classList.add('arrive');
+  }
+
+  function buildGoalList(openAll){
+    var list = document.getElementById('goal-list');
+    while(list.firstChild) list.removeChild(list.firstChild);
+    var rows = {};
+    GOALS.forEach(function(h, i){
+      var p = PRIZES[h];
+      var row = document.createElement('div');
+      row.className = 'goal-row' + (i === HEART ? ' mine' : '');
+      var gh = document.createElement('div'); gh.className = 'gh'; gh.textContent = h;
+      var back = document.createElement('div'); back.className = 'face back'; back.textContent = '？？？';
+      var front = document.createElement('div'); front.className = 'face front';
+      var rank = document.createElement('div'); rank.className = 'rank ' + p.tone; rank.textContent = p.rank;
+      if(i === HEART){ var tag = document.createElement('span'); tag.className = 'mine-tag'; tag.textContent = 'ひいたよ'; rank.appendChild(tag); }
+      var words = document.createElement('div'); words.className = 'words'; words.textContent = '「' + p.words + '」';
+      front.appendChild(rank); front.appendChild(words);
+      row.appendChild(gh); row.appendChild(back); row.appendChild(front);
+      if(openAll || i === HEART) row.classList.add('open');
+      list.appendChild(row);
+      rows[h] = row;
+    });
+    return rows;
+  }
+
+  function showGoals(){
+    var s = loadState();
+    if(!s || s.result !== 'correct'){ route(); return; } // 正解していなければ開示しない
+    var first = !s.revealed;
+    if(first){ s.revealed = true; saveState(s); } // 途中で閉じても次回は全部めくれた状態
+    renderStaticAmida(s);
+    var rows = buildGoalList(!first);
+    var msg = document.getElementById('reveal-msg');
+    var back = document.getElementById('back-win');
+    document.getElementById('reveal').classList.remove('hidden');
+    show('s-amida');
+
+    function finish(){
+      msg.textContent = 'ぜんぶ ひらいたよ 💗';
+      back.classList.remove('hidden');
+    }
+    if(!first){ finish(); return; }
+
+    msg.textContent = '';
+    back.classList.add('hidden');
+    var token = ++revealToken;
+    var n = 0;
+    function next(){
+      if(token !== revealToken) return;
+      if(n >= REVEAL_ORDER.length){ burstHearts(12); finish(); return; }
+      var h = REVEAL_ORDER[n++];
+      var row = rows[h];
+      row.classList.add('open', 'flip');
+      try{ row.scrollIntoView({behavior:'smooth', block:'nearest'}); }catch(e){}
+      var g = goalEls[GOALS.indexOf(h)];
+      if(g){ g.classList.remove('peek'); void g.getBoundingClientRect(); g.classList.add('peek'); }
+      setTimeout(next, 1500);
+    }
+    setTimeout(next, 1200);
+  }
+
+  /* ================= 5. 当日のお楽しみ ================= */
+  function showLose(){ show('s-lose'); }
+
+  /* ================= 演出 ================= */
+  function burstHearts(n){
+    var fx = document.getElementById('fx');
+    var items = ['💗','💖','❤️','🩵','✨','❄️','💕'];
+    for(var i=0;i<n;i++){
+      var s = document.createElement('span');
+      s.className = 'burst';
+      s.textContent = items[i % items.length];
+      var ang = Math.random() * Math.PI * 2, dist = 110 + Math.random() * 170;
+      s.style.setProperty('--x', Math.cos(ang) * dist + 'px');
+      s.style.setProperty('--y', Math.sin(ang) * dist + 'px');
+      s.style.setProperty('--r', (Math.random() * 120 - 60) + 'deg');
+      s.style.fontSize = (16 + Math.random() * 18) + 'px';
+      s.style.animationDelay = (Math.random() * .25) + 's';
+      fx.appendChild(s);
+      (function(node){ setTimeout(function(){ if(node.parentNode) node.parentNode.removeChild(node); }, 2200); })(s);
+    }
+  }
+  (function makeSnow(){
+    var box = document.getElementById('snow');
+    var kinds = ['❄','❅','•','✦','•','❆','♡'];
+    for(var i=0;i<28;i++){
+      var f = document.createElement('span');
+      f.className = 'flake';
+      f.textContent = kinds[i % kinds.length];
+      f.style.left = (Math.random() * 100) + 'vw';
+      f.style.fontSize = (8 + Math.random() * 14) + 'px';
+      f.style.opacity = (.5 + Math.random() * .5).toFixed(2);
+      f.style.animationDuration = (7 + Math.random() * 9) + 's';
+      f.style.animationDelay = (-Math.random() * 14) + 's';
+      f.style.setProperty('--dx', (Math.random() * 60 - 30) + 'px');
+      if(kinds[i % kinds.length] === '♡'){ f.style.color = '#ffb3c7'; }
+      box.appendChild(f);
+    }
+  })();
+})();
+</script>
+</body>
+</html>
